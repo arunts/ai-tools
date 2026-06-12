@@ -1,0 +1,38 @@
+{
+  "granularity": "project",
+  "units": [
+    {
+      "id": "-home-dev-api",
+      "manualMinutes": {
+        "low": 170,
+        "expected": 250,
+        "high": 341
+      },
+      "profile": "Backend / API engineer",
+      "narrative": "Backend endpoints, query tuning, and resilience work (backoff, async middleware) with frequent test runs.",
+      "note": "Sample calibration (~1.1x baseline)."
+    },
+    {
+      "id": "-home-dev-cli-tool",
+      "manualMinutes": {
+        "low": 132,
+        "expected": 194,
+        "high": 264
+      },
+      "profile": "Tooling / DX builder",
+      "narrative": "CLI tooling: flags, packaging, and parser hardening, iterating through build and run cycles.",
+      "note": "Sample calibration (~1.1x baseline)."
+    },
+    {
+      "id": "-home-dev-webapp",
+      "manualMinutes": {
+        "low": 86,
+        "expected": 127,
+        "high": 173
+      },
+      "profile": "Frontend feature dev",
+      "narrative": "Frontend work: component extraction, responsive fixes, and a dark-mode toggle, with a tight edit → lint → test loop.",
+      "note": "Sample calibration (~1.1x baseline)."
+    }
+  ]
+}

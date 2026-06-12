@@ -1,0 +1,29 @@
+{
+  "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
+  "name": "arunts-ai-tools",
+  "owner": { "name": "Arun" },
+  "metadata": {
+    "description": "Local-first tools for Claude Code.",
+    "version": "0.1.0"
+  },
+  "plugins": [
+    {
+      "name": "ai-session-analyzer",
+      "source": "./ai-session-analyzer",
+      "version": "0.1.0",
+      "category": "analytics",
+      "license": "MIT",
+      "keywords": ["analytics", "sessions", "productivity", "report"],
+      "description": "Analyze local Claude Code sessions into a self-contained HTML report: productivity, tool usage, activity patterns, per-project comparison, and an AI-calibrated 'time saved / What-X-faster' estimate."
+    },
+    {
+      "name": "coding-problem-analyzer",
+      "source": "./coding-problem-analyzer",
+      "version": "0.4.1",
+      "category": "productivity",
+      "license": "MIT",
+      "keywords": ["coding", "algorithms", "python", "study", "patterns"],
+      "description": "Generate study material from coding problems. Ships four skills: problem-details (one problem -> a compact record), coding-syntax-aggregator (pool records' syntax into a deduped, chapter-grouped reference), algo-pattern-analyzer (pool records' algorithms into a per-pattern practice deck), and algo-explainer (render each drill as a themed HTML page with a seeded p5.js visual)."
+    }
+  ]
+}

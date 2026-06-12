@@ -1,0 +1,245 @@
+<!doctype html>
+<html lang="en">
+<!--
+  algo-explainer — page template. Fill the {{PLACEHOLDERS}}.
+  Self-contained: PyPayasam tokens inlined, p5.js (CDN), dark/light toggle.
+  Multiple arts per page → p5 INSTANCE mode. The {{SKETCH_FACTORY}} block must
+  define makeArt(containerSel, seed, mode) that builds a p5 instance, registers it
+  with regArt(sel, inst), and exposes inst.reseedTo(seed) / inst.refreshTheme() /
+  inst.curSeed(). Sketches paint ONLY with theme token colors.
+-->
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{DRILL_TITLE}} — {{PATTERN_NAME}}</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.7.0/p5.min.js"></script>
+<script>(function(){try{var t=localStorage.getItem('lc-theme');
+  if(!t)t=matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light';
+  if(t==='dark')document.documentElement.setAttribute('data-theme','dark');}catch(e){}})();</script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;0,9..144,700;1,9..144,500&family=Nunito:ital,wght@0,400;0,500;0,600;0,700;0,800&family=Geist+Mono:wght@400;500&display=swap');
+:root{
+  color-scheme:light;
+  --sage-100:#e4ead2;--sage-300:#aec088;--sage-400:#8ea466;--sage-500:#6f8a4e;--sage-600:#5a7240;--sage-700:#4f6340;
+  --honey-100:#fbecc4;--honey-300:#f4d98a;--honey-500:#e8b658;--honey-600:#d09a3f;--honey-700:#a9792d;
+  --denim-100:#d8e1ea;--denim-400:#6a8bab;--denim-600:#3f5c78;
+  --peach-200:#f5cbb3;--peach-400:#e8a88b;--peach-600:#b16a4a;
+  --cream-50:#fdfaf2;--cream-100:#faf4e8;--cream-200:#f2e8d3;--cream-300:#e8dbbf;--cream-400:#d9c9a6;
+  --ink-400:#9c927f;--ink-500:#807564;--ink-600:#6b6052;--ink-700:#4a4238;--ink-800:#3a342c;--ink-900:#2a2620;
+  --danger:#b1412b;
+  --bg-0:var(--cream-50);--bg-1:var(--cream-100);--bg-2:var(--cream-200);--bg-3:var(--cream-300);
+  --fg-0:var(--ink-900);--fg-1:var(--ink-700);--fg-2:var(--ink-500);--fg-3:var(--ink-400);
+  --border-grout:rgba(60,48,30,.08);--border-grout-strong:rgba(60,48,30,.16);
+  --topbar-bg:rgba(253,250,242,.86);
+  --syntax-keyword:var(--danger);--syntax-function:var(--denim-600);--syntax-string:var(--sage-700);
+  --syntax-comment:var(--ink-400);--syntax-number:var(--honey-700);--syntax-class:var(--peach-600);
+  --syntax-operator:var(--ink-600);--syntax-variable:var(--ink-800);
+  --font-display:'Fraunces','Source Serif Pro',Georgia,serif;
+  --font-ui:'Nunito','Inter',-apple-system,BlinkMacSystemFont,sans-serif;
+  --font-mono:'Geist Mono',ui-monospace,'SF Mono',Menlo,monospace;
+  --radius-tile:6px;--radius-pebble:14px;--radius-nest:28px;--radius-pill:999px;
+  --shadow-tile:0 1px 2px rgba(60,48,30,.06);--shadow-lift:0 4px 14px -4px rgba(60,48,30,.12);
+  --shadow-nest:0 12px 32px -8px rgba(60,48,30,.18);--ease-out:cubic-bezier(.2,.8,.2,1);
+}
+:root[data-theme="dark"]{
+  color-scheme:dark;--topbar-bg:rgba(26,23,18,.82);
+  --cream-50:#1a1712;--cream-100:#221e17;--cream-200:#2b261d;--cream-300:#372f23;--cream-400:#463d2d;
+  --ink-400:#877c64;--ink-500:#a0957d;--ink-600:#bdb299;--ink-700:#d6ccb4;--ink-800:#e8dfca;--ink-900:#f4eddd;
+  --sage-100:#2c3620;--sage-300:#5f7a3f;--sage-400:#88ad57;--sage-500:#9ec46a;--sage-600:#b0d27e;--sage-700:#bcd78b;
+  --honey-100:#3a2f15;--honey-300:#c79b48;--honey-500:#e8b658;--honey-600:#f0c873;--honey-700:#f3d68f;
+  --denim-100:#28323d;--denim-400:#6a8bab;--denim-600:#8fb0cd;
+  --peach-200:#4a2f22;--peach-400:#e0996f;--peach-600:#e0996f;
+  --border-grout:rgba(244,237,221,.09);--border-grout-strong:rgba(244,237,221,.18);--danger:#e0795f;
+  --shadow-tile:0 1px 2px rgba(0,0,0,.35);--shadow-lift:0 6px 18px -4px rgba(0,0,0,.5);
+  --shadow-nest:0 14px 36px -8px rgba(0,0,0,.62);
+}
+*{box-sizing:border-box}
+html{font-family:var(--font-ui);color:var(--fg-1);background:var(--bg-0);-webkit-font-smoothing:antialiased}
+body{margin:0}
+.wrap{max-width:920px;margin:0 auto;padding:0 22px}
+.topbar{position:sticky;top:0;z-index:30;display:flex;align-items:center;gap:14px;height:60px;padding:0 22px;
+  background:var(--topbar-bg);backdrop-filter:blur(8px);border-bottom:1px solid var(--border-grout)}
+.brand{display:flex;align-items:baseline;gap:10px;min-width:0}
+.brand .wm{font-family:var(--font-display);font-weight:600;font-size:21px;color:var(--fg-0);letter-spacing:-.02em}
+.brand .tg{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--fg-2)}
+.spacer{flex:1}
+.theme-btn{width:38px;height:38px;display:inline-flex;align-items:center;justify-content:center;cursor:pointer;
+  color:var(--fg-2);background:transparent;border:1px solid var(--border-grout-strong);border-radius:var(--radius-tile);
+  transition:color .12s,background .12s,border-color .12s,transform .12s var(--ease-out)}
+.theme-btn:hover{color:var(--fg-0);background:var(--bg-2);border-color:transparent;transform:translateY(-1px)}
+.theme-btn svg{width:18px;height:18px}.theme-btn .moon{display:none}
+:root[data-theme="dark"] .theme-btn .sun{display:none}
+:root[data-theme="dark"] .theme-btn .moon{display:block}
+.hero{padding:30px 0 8px}
+.eyebrow{font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--fg-2)}
+.hero h1{font-family:var(--font-display);font-weight:600;font-size:34px;line-height:1.1;letter-spacing:-.02em;color:var(--fg-0);margin:.3em 0 .15em}
+.hero .sub{color:var(--fg-2);font-size:14px;font-family:var(--font-mono)}
+.artframe{margin:20px 0 8px;border:1px solid var(--border-grout-strong);border-radius:var(--radius-nest);background:var(--bg-1);box-shadow:var(--shadow-nest);overflow:hidden}
+.artframe .c{display:block;width:100%;line-height:0}
+.artbar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:10px 14px;border-top:1px solid var(--border-grout);background:var(--bg-1)}
+.artbar .cap{flex:1;min-width:170px;font-size:12.5px;color:var(--fg-2)}
+.btn{font-family:var(--font-ui);font-weight:600;font-size:12.5px;color:var(--fg-1);background:var(--bg-2);
+  border:1px solid var(--border-grout-strong);border-radius:var(--radius-pill);padding:5px 12px;cursor:pointer;transition:all .12s var(--ease-out)}
+.btn:hover{color:var(--fg-0);background:var(--bg-3);transform:translateY(-1px)}
+.btn.primary{color:var(--cream-50);background:var(--sage-500);border-color:transparent}
+.btn.primary:hover{background:var(--sage-600)}
+.seedwrap{display:inline-flex;align-items:center;gap:6px;font-size:12px;color:var(--fg-2)}
+.seedwrap input{width:74px;font-family:var(--font-mono);font-size:12px;color:var(--fg-0);background:var(--bg-3);border:1px solid var(--border-grout-strong);border-radius:var(--radius-tile);padding:4px 7px}
+main{padding:14px 0 70px}
+section{margin:26px 0}
+h2.sec{font-family:var(--font-display);font-weight:600;font-size:24px;letter-spacing:-.01em;color:var(--fg-0);margin:0 0 12px;padding-bottom:8px;border-bottom:1px solid var(--border-grout)}
+p{font-size:15px;line-height:1.55;color:var(--fg-1)}
+.note{font-style:italic;color:var(--fg-2);font-size:14px;margin:0 0 12px}
+.note code,.steps code,.stmt code{font-family:var(--font-mono);font-size:.86em;color:var(--sage-700);background:var(--bg-2);border:1px solid var(--border-grout);border-radius:5px;padding:.5px 5px}
+pre.code{margin:14px 0;padding:16px 18px;overflow-x:auto;background:var(--bg-1);border:1px solid var(--border-grout);border-radius:var(--radius-pebble);box-shadow:inset 0 0 0 1px var(--border-grout);font-family:var(--font-mono);font-size:13px;line-height:1.62;color:var(--ink-800);tab-size:4}
+pre.code.skel{background:var(--sage-100);border-color:var(--sage-300)}
+:root[data-theme="dark"] pre.code.skel{background:#23291a}
+.py .kw{color:var(--syntax-keyword)}.py .fn{color:var(--syntax-function)}.py .st{color:var(--syntax-string)}
+.py .cm{color:var(--syntax-comment);font-style:italic}.py .nu{color:var(--syntax-number)}
+.py .cl{color:var(--syntax-class)}.py .va{color:var(--syntax-variable)}
+.drill{border:1px solid var(--border-grout-strong);border-radius:var(--radius-pebble);background:var(--bg-1);padding:18px 20px;box-shadow:var(--shadow-lift)}
+.drill .stmt{font-family:var(--font-display);font-weight:600;font-size:19px;color:var(--fg-0);margin:0 0 6px}
+.drill .steps{font-size:14px;line-height:1.55;color:var(--fg-1)}
+.pill{display:inline-block;font-size:11px;font-weight:700;color:var(--denim-600);background:var(--denim-100);border-radius:var(--radius-pill);padding:2px 9px;margin-left:6px}
+/* expandable sibling problems, each with its own art */
+details.more{border:1px solid var(--border-grout-strong);border-radius:var(--radius-pebble);background:var(--bg-1);margin:12px 0;overflow:hidden;box-shadow:var(--shadow-tile)}
+details.more>summary{cursor:pointer;list-style:none;padding:15px 18px;display:flex;align-items:center;gap:10px;
+  font-family:var(--font-display);font-weight:600;font-size:17px;color:var(--fg-0)}
+details.more>summary::-webkit-details-marker{display:none}
+details.more>summary .chev{margin-left:auto;color:var(--fg-2);transition:transform .2s var(--ease-out);flex:none}
+details.more[open]>summary .chev{transform:rotate(90deg)}
+.more-body{padding:2px 18px 18px}
+.mini-art{border:1px solid var(--border-grout);border-radius:var(--radius-tile);overflow:hidden;background:var(--bg-0);margin:0 0 12px}
+.mini-art .c{display:block;width:100%;line-height:0}
+.mini-bar{display:flex;gap:8px;align-items:center;flex-wrap:wrap;padding:8px 12px;border-top:1px solid var(--border-grout);background:var(--bg-1);font-size:12px;color:var(--fg-2)}
+.mini-bar .cap{flex:1;min-width:150px}
+footer{border-top:1px solid var(--border-grout);padding:18px 0;color:var(--fg-3);font-size:12px}
+footer code{font-family:var(--font-mono)}
+@media(max-width:620px){.hero h1{font-size:27px}}
+</style>
+</head>
+<body>
+<header class="topbar">
+  <div class="brand"><span class="wm">drill</span><span class="tg">{{PATTERN_NAME}}</span></div>
+  <div class="spacer"></div>
+  <button class="theme-btn" id="themeBtn" aria-label="Toggle theme" title="Toggle light / dark">
+    <svg class="sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2M5 5l1.5 1.5M17.5 17.5L19 19M19 5l-1.5 1.5M6.5 17.5L5 19"/></svg>
+    <svg class="moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3 7 7 0 0 0 21 12.8z"/></svg>
+  </button>
+</header>
+
+<div class="wrap">
+  <div class="hero">
+    <div class="eyebrow">{{PATTERN_NAME}} · problem</div>
+    <h1>{{DRILL_TITLE}}</h1>
+    <div class="sub">{{COMPLEXITY}}</div>
+    <div class="artframe">
+      <div id="art-canvas" class="c"></div>
+      <div class="artbar">
+        <span class="cap">{{ART_CAPTION}}</span>
+        <span class="seedwrap">seed <input id="seedIn" type="number" value="{{SEED}}"></span>
+        <button class="btn" onclick="mainStep(-1)">‹ prev</button>
+        <button class="btn" onclick="mainStep(1)">next ›</button>
+        <button class="btn primary" onclick="mainRand()">↻ random</button>
+      </div>
+    </div>
+  </div>
+
+  <main>
+    <section>
+      <h2 class="sec">Core algorithm</h2>
+      <p class="note">{{CORE_NOTE}}</p>
+      <pre class="code skel"><code class="py">{{CORE_SKELETON}}</code></pre>
+    </section>
+
+    <section>
+      <h2 class="sec">Problem</h2>
+      <div class="drill">
+        <p class="stmt">{{DRILL_STATEMENT}}<span class="pill">{{COMPLEXITY_SHORT}}</span></p>
+        <p class="steps"><strong>Steps:</strong> {{DRILL_STEPS}}</p>
+        <pre class="code"><code class="py">{{DRILL_CODE}}</code></pre>
+      </div>
+    </section>
+
+    <section>
+      <h2 class="sec">More problems in this pattern</h2>
+      <!-- Repeat one <details.more> per sibling drill. Each carries its own art
+           (lazy-initialized on first open) + statement / steps / code.
+           data-mode/data-seed feed makeArt(); the canvas id must start with "art-". -->
+      {{MORE_PROBLEMS}}
+      <!-- example block:
+      <details class="more" data-seed="7" data-mode="jump">
+        <summary>{{STMT}}<span class="pill">{{CX}}</span><span class="chev">›</span></summary>
+        <div class="more-body">
+          <div class="mini-art"><div id="art-2" class="c"></div>
+            <div class="mini-bar"><span class="cap">{{MINI_CAPTION}}</span>
+              <button class="btn" onclick="shuffleArt('#art-2')">↻ random</button></div></div>
+          <p class="steps"><strong>Steps:</strong> {{STEPS}}</p>
+          <pre class="code"><code class="py">{{CODE}}</code></pre>
+        </div>
+      </details>
+      -->
+    </section>
+  </main>
+  <footer class="wrap">Generated by <code>algo-explainer</code> · each art is seeded &amp; reproducible · theme persists.</footer>
+</div>
+
+<script>
+/* ---- Python highlighter (PyPayasam syntax tokens) ---- */
+(function(){
+  var KW=new Set("def return for while if elif else in not and or is None True False break continue class from import as with lambda yield pass raise try except finally global nonlocal del assert".split(" "));
+  var BI=new Set("range len enumerate max min sum sorted set dict list tuple map filter zip abs int str print reversed any all Counter".split(" "));
+  function esc(c){return c==='&'?'&amp;':c==='<'?'&lt;':c==='>'?'&gt;':c;}
+  function hl(code){var out="",i=0,n=code.length;
+    while(i<n){var c=code[i];
+      if(c==='#'){var j=i;while(j<n&&code[j]!=='\n')j++;out+='<span class="cm">'+[].map.call(code.slice(i,j),esc).join('')+'</span>';i=j;continue;}
+      if(c==='"'||c==="'"){var q=c,j=i+1;while(j<n&&code[j]!==q){if(code[j]==='\\')j++;j++;}j=Math.min(j+1,n);out+='<span class="st">'+[].map.call(code.slice(i,j),esc).join('')+'</span>';i=j;continue;}
+      if(/[A-Za-z_]/.test(c)){var j=i;while(j<n&&/[A-Za-z0-9_]/.test(code[j]))j++;var w=code.slice(i,j),k=j;while(k<n&&code[k]===' ')k++;
+        var cls=KW.has(w)?'kw':BI.has(w)?'cl':(code[k]==='('?'fn':'va');out+='<span class="'+cls+'">'+w+'</span>';i=j;continue;}
+      if(/[0-9]/.test(c)){var j=i;while(j<n&&/[0-9.]/.test(code[j]))j++;out+='<span class="nu">'+code.slice(i,j)+'</span>';i=j;continue;}
+      out+=esc(c);i++;}
+    return out;}
+  document.querySelectorAll('pre.code > code.py').forEach(function(el){el.innerHTML=hl(el.textContent);});
+})();
+
+/* ---- art registry (p5 instance mode) ---- */
+var ARTMAP={};
+function regArt(sel,inst){ARTMAP[sel]=inst;}
+function refreshAllThemes(){for(var k in ARTMAP){if(ARTMAP[k]&&ARTMAP[k].refreshTheme)ARTMAP[k].refreshTheme();}}
+function shuffleArt(sel){var i=ARTMAP[sel];if(i&&i.reseedTo)i.reseedTo(Math.floor(Math.random()*99999));}
+function mainStep(d){var el=document.getElementById('seedIn');var s=(parseInt(el.value,10)||0)+d;el.value=s;shuffleSeed('#art-canvas',s);}
+function mainRand(){var s=Math.floor(Math.random()*99999);document.getElementById('seedIn').value=s;shuffleSeed('#art-canvas',s);}
+function shuffleSeed(sel,s){var i=ARTMAP[sel];if(i&&i.reseedTo)i.reseedTo(s);}
+document.getElementById('seedIn').addEventListener('change',function(){shuffleSeed('#art-canvas',parseInt(this.value,10)||0);});
+
+/* ---- theme toggle (refresh every art) ---- */
+document.getElementById('themeBtn').addEventListener('click',function(){
+  var dark=document.documentElement.getAttribute('data-theme')==='dark';
+  if(dark)document.documentElement.removeAttribute('data-theme');else document.documentElement.setAttribute('data-theme','dark');
+  try{localStorage.setItem('lc-theme',dark?'light':'dark');}catch(e){}
+  refreshAllThemes();
+});
+
+/* ---- lazy-init each sibling art when its <details> first opens ---- */
+document.querySelectorAll('details.more').forEach(function(d){
+  d.addEventListener('toggle',function(){
+    if(!d.open||d.dataset.inited)return;
+    d.dataset.inited='1';
+    var host=d.querySelector('[id^="art-"]');
+    if(host)makeArt('#'+host.id, parseInt(d.dataset.seed,10)||1, d.dataset.mode||'jump');
+  });
+});
+</script>
+
+<script>
+/* ===== {{SKETCH_FACTORY}} =================================================
+   Define makeArt(containerSel, seed, mode): build a p5 instance for the drill's
+   bespoke mechanic, regArt(containerSel, inst), and expose on the instance:
+     inst.reseedTo(seed)  -> reset+restart for a seed
+     inst.refreshTheme()  -> re-read token colors and repaint
+   Paint ONLY with theme token colors (getComputedStyle). Then init the main art:
+     makeArt('#art-canvas', {{SEED}}, '{{MAIN_MODE}}');
+   ====================================================================== */
+</script>
+</body>
+</html>

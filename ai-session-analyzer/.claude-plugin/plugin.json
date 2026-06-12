@@ -1,0 +1,30 @@
+{
+  "name": "ai-session-analyzer",
+  "displayName": "AI Session Analyzer",
+  "version": "0.1.0",
+  "description": "Analyze your local Claude Code sessions and generate a self-contained HTML report: productivity, tool usage, activity patterns, per-project comparison, and an AI-calibrated 'time saved / What-X-faster' estimate. Runs fully locally and uses your Claude Code session as the analysis engine.",
+  "author": { "name": "Arun" },
+  "license": "MIT",
+  "keywords": ["analytics", "sessions", "productivity", "report", "claude-code"],
+  "skills": "./skills/",
+  "userConfig": {
+    "session_data_path": {
+      "type": "directory",
+      "title": "Session data directory",
+      "description": "Where Claude Code stores session JSONL files.",
+      "default": "~/.claude/projects"
+    },
+    "snapshot_dir": {
+      "type": "directory",
+      "title": "Snapshot directory",
+      "description": "Where computed analysis snapshots are stored. Persisting them enables trends over time and incremental (iterative) build-up across runs.",
+      "default": "~/.claude/session-analyzer/snapshots"
+    },
+    "report_dir": {
+      "type": "directory",
+      "title": "Report output directory",
+      "description": "Where generated HTML reports are written.",
+      "default": "~/.claude/session-analyzer/reports"
+    }
+  }
+}

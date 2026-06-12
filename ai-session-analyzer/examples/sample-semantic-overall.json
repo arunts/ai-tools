@@ -1,0 +1,16 @@
+{
+  "granularity": "overall",
+  "units": [
+    {
+      "id": "overall",
+      "manualMinutes": {
+        "low": 389,
+        "expected": 570,
+        "high": 778
+      },
+      "profile": "Full-stack multi-project builder",
+      "narrative": "A full-stack sweep across frontend, API, and CLI tooling — heavy on iterative edit/build/test loops where the AI compressed the most hands-on time.",
+      "note": "Sample calibration (~1.1x baseline)."
+    }
+  ]
+}

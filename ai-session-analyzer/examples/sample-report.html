@@ -1,0 +1,360 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>AI Session Analyzer — Report</title>
+<style>
+  :root,[data-theme="dark"]{
+    /* gruvbox dark */
+    --bg:#282828; --bg2:#1d2021; --panel:#32302f; --panel2:#3c3836; --line:#504945;
+    --ink:#ebdbb2; --muted:#a89984; --faint:#928374;
+    --accent:#fabd2f; --accent2:#8ec07c; --accent2b:#689d6a; --warn:#fe8019; --bad:#fb4934;
+    --rangeb:#665c54; --heat:250,189,47;
+    --mono:ui-monospace,"SF Mono",SFMono-Regular,Menlo,Consolas,"Liberation Mono",monospace;
+    --r:14px; --r2:10px;
+  }
+  [data-theme="light"]{
+    /* gruvbox light */
+    --bg:#f2e5bc; --bg2:#ebdbb2; --panel:#fbf1c7; --panel2:#ebdbb2; --line:#d5c4a1;
+    --ink:#3c3836; --muted:#665c54; --faint:#7c6f64;
+    --accent:#b57614; --accent2:#427b58; --accent2b:#79740e; --warn:#af3a03; --bad:#9d0006;
+    --rangeb:#bdae93; --heat:181,118,20;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0}
+  body{background:var(--bg);color:var(--ink);font:15px/1.5 ui-sans-serif,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;-webkit-font-smoothing:antialiased;transition:background .2s,color .2s}
+  .wrap{max-width:1080px;margin:0 auto;padding:32px 24px 80px}
+  a{color:var(--accent);text-decoration:none}
+  h1,h2,h3{margin:0;font-weight:650;letter-spacing:-.01em}
+  h2{font-family:var(--mono);font-size:12.5px;text-transform:uppercase;letter-spacing:.08em;color:var(--accent);margin:0 0 14px}
+  h2::before{content:"› ";color:var(--faint)}
+  .sub{color:var(--muted);font-size:13px}
+  section{margin-top:38px}
+  .panel{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:22px}
+  .grid{display:grid;gap:14px}
+
+  /* header */
+  header .top{display:flex;justify-content:space-between;align-items:baseline;flex-wrap:wrap;gap:10px}
+  header h1{font-size:24px}
+  .pills{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
+  .pill{background:var(--panel2);border:1px solid var(--line);color:var(--muted);border-radius:999px;padding:5px 12px;font-size:12px}
+  .pill b{color:var(--ink);font-weight:600}
+
+  /* hero */
+  .hero{background:linear-gradient(135deg,var(--panel2),var(--bg2));border:1px solid var(--line);border-radius:var(--r);padding:30px;margin-top:24px;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.1fr);gap:28px}
+  .xbig{font-family:var(--mono);font-size:72px;font-weight:760;line-height:1;letter-spacing:-.03em;background:linear-gradient(90deg,var(--accent),var(--warn));-webkit-background-clip:text;background-clip:text;color:transparent}
+  .xcap{color:var(--muted);font-size:14px;margin-top:8px}
+  .hero .saved{font-size:18px;margin-top:18px;color:var(--ink)}
+  .hero .saved b{color:var(--accent2)}
+  .rangebar{height:8px;border-radius:8px;background:var(--panel2);position:relative;margin:10px 0 4px;overflow:hidden}
+  .rangebar i{position:absolute;top:0;bottom:0;background:linear-gradient(90deg,var(--rangeb),var(--accent));opacity:.7}
+  .rngrow{display:flex;justify-content:space-between;font-size:12px;color:var(--faint)}
+  .src{display:inline-block;margin-top:14px;font-size:12px;color:var(--faint);border:1px dashed var(--line);border-radius:8px;padding:6px 10px}
+  .narrative{color:var(--ink);font-size:14.5px;line-height:1.6}
+  .profile{color:var(--accent2);font-weight:600;margin-bottom:8px}
+
+  /* stat cards */
+  .cards{grid-template-columns:repeat(auto-fill,minmax(150px,1fr))}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:var(--r2);padding:16px}
+  .card .n{font-family:var(--mono);font-size:25px;font-weight:680;letter-spacing:-.02em;color:var(--ink)}
+  .card .l{color:var(--muted);font-size:12.5px;margin-top:3px}
+  .card .s{color:var(--faint);font-size:11.5px;margin-top:6px}
+
+  /* bars */
+  .bar{display:grid;grid-template-columns:130px 1fr 56px;align-items:center;gap:10px;margin:7px 0;font-size:13px}
+  .bar .lab{color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .bar .track{background:var(--panel2);border-radius:6px;height:18px;overflow:hidden}
+  .bar .fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--warn));border-radius:6px}
+  .bar .val{font-family:var(--mono);text-align:right;color:var(--ink);font-variant-numeric:tabular-nums}
+  .bar.alt .fill{background:linear-gradient(90deg,var(--accent2),var(--accent2b))}
+
+  /* table */
+  table{width:100%;border-collapse:collapse;font-size:13.5px}
+  th,td{text-align:right;padding:9px 10px;border-bottom:1px solid var(--line);font-variant-numeric:tabular-nums}
+  td{font-family:var(--mono);font-size:12.5px}
+  th:first-child,td:first-child{text-align:left}
+  th{color:var(--muted);font-weight:600;font-size:12px;text-transform:uppercase;letter-spacing:.04em}
+  tr.detail td{border-bottom:1px solid var(--line);color:var(--muted);font-size:13px;text-align:left;background:var(--panel2)}
+  .mult{color:var(--accent2);font-weight:600}
+  .clk{cursor:pointer}
+  .clk:hover td:first-child{color:var(--accent)}
+
+  /* heatmap */
+  .heat{display:grid;grid-template-columns:34px repeat(24,1fr);gap:3px;font-size:10px;color:var(--faint)}
+  .heat .cell{aspect-ratio:1;border-radius:3px;background:var(--panel2)}
+  .heat .hr{text-align:center}
+  .heat .dy{display:flex;align-items:center}
+
+  .two{grid-template-columns:1fr 1fr}
+  @media(max-width:820px){.hero,.two{grid-template-columns:1fr}}
+  .legend{display:flex;gap:14px;flex-wrap:wrap;color:var(--faint);font-size:12px;margin-top:10px}
+  .legend span{display:inline-flex;align-items:center;gap:6px}
+  .dot{width:10px;height:10px;border-radius:3px;display:inline-block}
+  .foot{margin-top:48px;color:var(--faint);font-size:12px;text-align:center}
+  .empty{color:var(--faint);font-size:13px;font-style:italic}
+  /* theme toggle + theme-reactive chart colors */
+  #themebtn{position:fixed;top:16px;right:16px;z-index:20;width:38px;height:38px;border-radius:999px;background:var(--panel);color:var(--ink);border:1px solid var(--line);font-family:var(--mono);font-size:15px;cursor:pointer;line-height:1;box-shadow:0 2px 10px rgba(0,0,0,.18);transition:background .2s,color .2s,border-color .2s}
+  #themebtn:hover{border-color:var(--accent);color:var(--accent)}
+  .tl-line{fill:none;stroke:var(--accent);stroke-width:2}
+  .tl-area{fill:rgba(var(--heat),.13);stroke:none}
+  .tl-dot{fill:var(--accent)}
+  .tr-line{fill:none;stroke:var(--accent2);stroke-width:2}
+  .tr-dot{fill:var(--accent2)}
+</style>
+<script>try{var _s=localStorage.getItem("asa-theme");var _t=_s||((window.matchMedia&&matchMedia("(prefers-color-scheme: light)").matches)?"light":"dark");document.documentElement.dataset.theme=_t;}catch(e){}</script>
+</head>
+<body>
+<button id="themebtn" type="button" title="Toggle light/dark" aria-label="Toggle theme">☀</button>
+<script>
+(function(){
+  var b=document.getElementById("themebtn");
+  function c(){return document.documentElement.dataset.theme==="light"?"light":"dark";}
+  function g(t){b.textContent=t==="light"?"☾":"☀";}
+  function s(t,save){document.documentElement.dataset.theme=t;if(save){try{localStorage.setItem("asa-theme",t);}catch(e){}}g(t);}
+  g(c());
+  b.addEventListener("click",function(){s(c()==="light"?"dark":"light",true);});
+  // follow OS changes until the user makes an explicit choice
+  try{if(window.matchMedia){matchMedia("(prefers-color-scheme: light)").addEventListener("change",function(e){try{if(!localStorage.getItem("asa-theme"))s(e.matches?"light":"dark",false);}catch(_){}}); }}catch(e){}
+})();
+</script>
+<div class="wrap" id="app"></div>
+<script>window.__REPORT__ = {"meta":{"generatedAt":"2026-06-08T23:47:11.737Z","renderedAt":"2026-06-08T23:47:11.840Z","granularity":"project","filters":{"from":null,"to":null,"project":null},"dataDir":"/Users/arun/Documents/Code/AISessionAnalyzer/examples/sample-data","sessionCount":8,"projectCount":3},"baseline":{"perWriteMin":1.5,"perWriteLine10":2.5,"perEditMin":1.5,"perEditLine10":2,"bash":{"test":4,"build":2,"git":1,"install":1.5,"other":1},"perReadMin":0.5,"readCapMin":30,"overheadPct":0.1},"hero":{"id":"overall","label":"All sessions","level":"overall","sessionsCount":8,"activeHours":2.64,"firstTs":"2026-05-20T13:12:00.000Z","lastTs":"2026-06-02T10:25:48.000Z","edits":40,"writes":17,"reads":14,"bash":29,"bashClasses":{"test":2,"build":4,"git":10,"install":0,"other":13},"distinctFiles":11,"humanPrompts":28,"assistantMsgs":130,"tokens":{"input":296887,"output":115607,"cacheCreate":187153,"cacheRead":6219173},"tools":{"Edit":40,"Read":14,"Write":17,"Bash":29},"toolErrors":{"Edit":3,"Write":1,"Read":2,"Bash":2},"toolResults":100,"toolErrorsTotal":8,"linesWritten":870,"linesEditedNew":407,"linesEditedOld":205,"heat":{"1_9":14,"1_10":7,"3_3":11,"2_3":13,"3_8":19,"4_6":11,"2_13":23,"3_6":24,"3_14":8},"baseline":{"minutes":518.5,"breakdown":{"write":243,"edit":182.4,"bash":39,"read":7,"overhead":47.1}},"narrative":"A full-stack sweep across frontend, API, and CLI tooling — heavy on iterative edit/build/test loops where the AI compressed the most hands-on time.","profile":"Full-stack multi-project builder","timeSaved":{"source":"llm","actualMin":158.7,"manualMin":{"low":389,"expected":570,"high":778},"savedMin":{"low":230.3,"expected":411.4,"high":619.4},"multiplier":3.6,"note":"Sample calibration (~1.1x baseline)."}},"units":[{"id":"-home-dev-cli-tool","label":"cli-tool","level":"project","sessionsCount":3,"activeHours":1.07,"firstTs":"2026-05-20T15:13:00.000Z","lastTs":"2026-05-26T20:54:39.000Z","edits":16,"writes":5,"reads":5,"bash":14,"bashClasses":{"test":0,"build":4,"git":3,"install":0,"other":7},"distinctFiles":3,"humanPrompts":13,"assistantMsgs":53,"tokens":{"input":118877,"output":46393,"cacheCreate":76416,"cacheRead":2377508},"tools":{"Bash":14,"Write":5,"Edit":16,"Read":5},"toolErrors":{"Read":2,"Bash":1,"Edit":1},"toolResults":40,"toolErrorsTotal":4,"linesWritten":220,"linesEditedNew":172,"linesEditedOld":94,"heat":{"3_8":19,"4_6":11,"2_13":23},"baseline":{"minutes":176.2,"breakdown":{"write":62.5,"edit":77.2,"bash":18,"read":2.5,"overhead":16}},"narrative":"CLI tooling: flags, packaging, and parser hardening, iterating through build and run cycles.","profile":"Tooling / DX builder","timeSaved":{"source":"llm","actualMin":64,"manualMin":{"low":132,"expected":194,"high":264},"savedMin":{"low":68,"expected":130,"high":200},"multiplier":3,"note":"Sample calibration (~1.1x baseline)."}},{"id":"-home-dev-api","label":"api","level":"project","sessionsCount":3,"activeHours":0.89,"firstTs":"2026-05-27T10:08:00.000Z","lastTs":"2026-06-02T10:25:48.000Z","edits":13,"writes":8,"reads":4,"bash":11,"bashClasses":{"test":1,"build":0,"git":5,"install":0,"other":5},"distinctFiles":4,"humanPrompts":8,"assistantMsgs":45,"tokens":{"input":101271,"output":41192,"cacheCreate":62448,"cacheRead":2339065},"tools":{"Edit":13,"Read":4,"Write":8,"Bash":11},"toolErrors":{"Edit":1,"Write":1},"toolResults":36,"toolErrorsTotal":2,"linesWritten":488,"linesEditedNew":124,"linesEditedOld":61,"heat":{"1_9":14,"1_10":7,"3_3":11,"2_3":13},"baseline":{"minutes":227.2,"breakdown":{"write":134,"edit":56.5,"bash":14,"read":2,"overhead":20.7}},"narrative":"Backend endpoints, query tuning, and resilience work (backoff, async middleware) with frequent test runs.","profile":"Backend / API engineer","timeSaved":{"source":"llm","actualMin":53.6,"manualMin":{"low":170,"expected":250,"high":341},"savedMin":{"low":116.4,"expected":196.4,"high":287.4},"multiplier":4.7,"note":"Sample calibration (~1.1x baseline)."}},{"id":"-home-dev-webapp","label":"webapp","level":"project","sessionsCount":2,"activeHours":0.68,"firstTs":"2026-05-20T13:12:00.000Z","lastTs":"2026-05-27T21:55:58.000Z","edits":11,"writes":4,"reads":5,"bash":4,"bashClasses":{"test":1,"build":0,"git":2,"install":0,"other":1},"distinctFiles":4,"humanPrompts":7,"assistantMsgs":32,"tokens":{"input":76739,"output":28022,"cacheCreate":48289,"cacheRead":1502600},"tools":{"Edit":11,"Bash":4,"Read":5,"Write":4},"toolErrors":{"Edit":1,"Bash":1},"toolResults":24,"toolErrorsTotal":2,"linesWritten":162,"linesEditedNew":111,"linesEditedOld":50,"heat":{"3_6":24,"3_14":8},"baseline":{"minutes":115.2,"breakdown":{"write":46.5,"edit":48.7,"bash":7,"read":2.5,"overhead":10.5}},"narrative":"Frontend work: component extraction, responsive fixes, and a dark-mode toggle, with a tight edit → lint → test loop.","profile":"Frontend feature dev","timeSaved":{"source":"llm","actualMin":41.1,"manualMin":{"low":86,"expected":127,"high":173},"savedMin":{"low":44.9,"expected":85.9,"high":131.9},"multiplier":3.1,"note":"Sample calibration (~1.1x baseline)."}}],"projects":[{"id":"-home-dev-cli-tool","label":"cli-tool","level":"project","sessionsCount":3,"activeHours":1.07,"firstTs":"2026-05-20T15:13:00.000Z","lastTs":"2026-05-26T20:54:39.000Z","edits":16,"writes":5,"reads":5,"bash":14,"bashClasses":{"test":0,"build":4,"git":3,"install":0,"other":7},"distinctFiles":3,"humanPrompts":13,"assistantMsgs":53,"tokens":{"input":118877,"output":46393,"cacheCreate":76416,"cacheRead":2377508},"tools":{"Bash":14,"Write":5,"Edit":16,"Read":5},"toolErrors":{"Read":2,"Bash":1,"Edit":1},"toolResults":40,"toolErrorsTotal":4,"linesWritten":220,"linesEditedNew":172,"linesEditedOld":94,"heat":{"3_8":19,"4_6":11,"2_13":23},"baseline":{"minutes":176.2,"breakdown":{"write":62.5,"edit":77.2,"bash":18,"read":2.5,"overhead":16}},"narrative":"CLI tooling: flags, packaging, and parser hardening, iterating through build and run cycles.","profile":"Tooling / DX builder","timeSaved":{"source":"llm","actualMin":64,"manualMin":{"low":132,"expected":194,"high":264},"savedMin":{"low":68,"expected":130,"high":200},"multiplier":3,"note":"Sample calibration (~1.1x baseline)."}},{"id":"-home-dev-api","label":"api","level":"project","sessionsCount":3,"activeHours":0.89,"firstTs":"2026-05-27T10:08:00.000Z","lastTs":"2026-06-02T10:25:48.000Z","edits":13,"writes":8,"reads":4,"bash":11,"bashClasses":{"test":1,"build":0,"git":5,"install":0,"other":5},"distinctFiles":4,"humanPrompts":8,"assistantMsgs":45,"tokens":{"input":101271,"output":41192,"cacheCreate":62448,"cacheRead":2339065},"tools":{"Edit":13,"Read":4,"Write":8,"Bash":11},"toolErrors":{"Edit":1,"Write":1},"toolResults":36,"toolErrorsTotal":2,"linesWritten":488,"linesEditedNew":124,"linesEditedOld":61,"heat":{"1_9":14,"1_10":7,"3_3":11,"2_3":13},"baseline":{"minutes":227.2,"breakdown":{"write":134,"edit":56.5,"bash":14,"read":2,"overhead":20.7}},"narrative":"Backend endpoints, query tuning, and resilience work (backoff, async middleware) with frequent test runs.","profile":"Backend / API engineer","timeSaved":{"source":"llm","actualMin":53.6,"manualMin":{"low":170,"expected":250,"high":341},"savedMin":{"low":116.4,"expected":196.4,"high":287.4},"multiplier":4.7,"note":"Sample calibration (~1.1x baseline)."}},{"id":"-home-dev-webapp","label":"webapp","level":"project","sessionsCount":2,"activeHours":0.68,"firstTs":"2026-05-20T13:12:00.000Z","lastTs":"2026-05-27T21:55:58.000Z","edits":11,"writes":4,"reads":5,"bash":4,"bashClasses":{"test":1,"build":0,"git":2,"install":0,"other":1},"distinctFiles":4,"humanPrompts":7,"assistantMsgs":32,"tokens":{"input":76739,"output":28022,"cacheCreate":48289,"cacheRead":1502600},"tools":{"Edit":11,"Bash":4,"Read":5,"Write":4},"toolErrors":{"Edit":1,"Bash":1},"toolResults":24,"toolErrorsTotal":2,"linesWritten":162,"linesEditedNew":111,"linesEditedOld":50,"heat":{"3_6":24,"3_14":8},"baseline":{"minutes":115.2,"breakdown":{"write":46.5,"edit":48.7,"bash":7,"read":2.5,"overhead":10.5}},"narrative":"Frontend work: component extraction, responsive fixes, and a dark-mode toggle, with a tight edit → lint → test loop.","profile":"Frontend feature dev","timeSaved":{"source":"llm","actualMin":41.1,"manualMin":{"low":86,"expected":127,"high":173},"savedMin":{"low":44.9,"expected":85.9,"high":131.9},"multiplier":3.1,"note":"Sample calibration (~1.1x baseline)."}}],"timeline":[{"date":"2026-05-20","sessions":2,"tokens":138248,"activeHours":0.79},{"date":"2026-05-21","sessions":1,"tokens":36500,"activeHours":0.2},{"date":"2026-05-26","sessions":1,"tokens":67061,"activeHours":0.51},{"date":"2026-05-27","sessions":2,"tokens":65386,"activeHours":0.51},{"date":"2026-06-01","sessions":1,"tokens":62912,"activeHours":0.36},{"date":"2026-06-02","sessions":1,"tokens":42387,"activeHours":0.28}],"trends":[{"generatedAt":"2026-06-08T23:47:11.691Z","activeHours":0.99,"edits":18,"writes":5,"tokens":174748,"sessions":3},{"generatedAt":"2026-06-08T23:47:11.715Z","activeHours":2.01,"edits":29,"writes":13,"tokens":307195,"sessions":6},{"generatedAt":"2026-06-08T23:47:11.737Z","activeHours":2.64,"edits":40,"writes":17,"tokens":412494,"sessions":8}]};</script>
+<script>
+(function(){
+  const R = window.__REPORT__ || {};
+  const app = document.getElementById("app");
+
+  // ---------- helpers ----------
+  const h = (tag, props, ...kids) => {
+    const e = document.createElement(tag);
+    if (props) for (const [k,v] of Object.entries(props)){
+      if (k==="class") e.className=v; else if (k==="html") e.innerHTML=v;
+      else if (k.startsWith("on")&&typeof v==="function") e.addEventListener(k.slice(2),v);
+      else if (v!=null) e.setAttribute(k,v);
+    }
+    for (const kid of kids.flat()) if(kid!=null) e.append(kid.nodeType?kid:document.createTextNode(kid));
+    return e;
+  };
+  const intf = n => (n==null?"—":Math.round(n).toLocaleString());
+  const toks = n => n==null?"—":(n>=1e6?(n/1e6).toFixed(1)+"M":n>=1e3?(n/1e3).toFixed(1)+"k":""+n);
+  const hrs = m => { if(m==null) return "—"; const x=m/60; return x>=1?x.toFixed(1)+"h":Math.round(m)+"m"; };
+  const days = m => (m/60/8); // 8h workdays
+  const pct = (a,b)=> b? Math.round(100*a/b)+"%":"0%";
+
+  // ---------- header ----------
+  const meta = R.meta||{};
+  app.append(h("header",null,
+    h("div",{class:"top"},
+      h("h1",null,"AI Session Analyzer"),
+      h("div",{class:"sub"}, "rendered "+(meta.renderedAt||"").slice(0,16).replace("T"," "))
+    ),
+    h("div",{class:"pills"},
+      h("span",{class:"pill",html:"granularity <b>"+(meta.granularity||"overall")+"</b>"}),
+      h("span",{class:"pill",html:"<b>"+intf(meta.sessionCount)+"</b> sessions"}),
+      h("span",{class:"pill",html:"<b>"+intf(meta.projectCount)+"</b> projects"}),
+      (meta.filters&&meta.filters.project)?h("span",{class:"pill",html:"project filter <b>"+meta.filters.project+"</b>"}):null,
+      (meta.filters&&(meta.filters.from||meta.filters.to))?h("span",{class:"pill",html:"dates <b>"+(meta.filters.from||"…")+" → "+(meta.filters.to||"…")+"</b>"}):null
+    )
+  ));
+
+  // ---------- hero / What-X ----------
+  const hero = R.hero||{};
+  const ts = hero.timeSaved||{};
+  const mult = ts.multiplier;
+  const savedExp = ts.savedMin? ts.savedMin.expected : null;
+  app.append(h("div",{class:"hero"},
+    h("div",null,
+      h("div",{class:"xbig"}, mult!=null? "≈ "+mult+"×" : "—"),
+      h("div",{class:"xcap"}, "throughput vs. doing it by hand"),
+      h("div",{class:"saved"}, savedExp!=null? ["≈ ", h("b",null, hrs(savedExp)), " saved  ", h("span",{class:"sub"},"(~"+days(savedExp).toFixed(1)+" workdays)")] : "—"),
+      renderRange(ts),
+      h("div",{class:"src"}, ts.source==="llm" ? "✓ calibrated by Claude" : "⚠ heuristic baseline — run the skill to calibrate")
+    ),
+    h("div",null,
+      hero.profile? h("div",{class:"profile"}, hero.profile):null,
+      h("div",{class:"narrative"}, hero.narrative || "No narrative yet. Run the analyze-sessions skill so Claude can characterize your work and calibrate the time-saved estimate.")
+    )
+  ));
+
+  function renderRange(ts){
+    if(!ts.manualMin) return null;
+    const a=ts.actualMin||0, mm=ts.manualMin;
+    const max=Math.max(mm.high,a)||1;
+    return h("div",null,
+      h("div",{class:"rngrow"}, h("span",null,"actual "+hrs(a)), h("span",null,"manual "+hrs(mm.expected))),
+      h("div",{class:"rangebar"}, h("i",{style:`left:${100*mm.low/max}%;right:${100*(1-mm.high/max)}%`})),
+      h("div",{class:"rngrow"}, h("span",null,"low "+hrs(mm.low)), h("span",null,"high "+hrs(mm.high)))
+    );
+  }
+
+  // ---------- productivity cards ----------
+  const card=(n,l,s)=>h("div",{class:"card"},h("div",{class:"n"},n),h("div",{class:"l"},l),s?h("div",{class:"s"},s):null);
+  section("Productivity", h("div",{class:"grid cards"},
+    card(intf(hero.edits+hero.writes), "file changes", hero.writes+" new · "+hero.edits+" edits"),
+    card(intf(hero.distinctFiles), "distinct files touched"),
+    card(intf(hero.linesWritten+hero.linesEditedNew), "lines authored", intf(hero.linesWritten)+" written · "+intf(hero.linesEditedNew)+" edited"),
+    card(intf(hero.bash), "shell commands"),
+    card(intf(hero.assistantMsgs), "assistant turns", intf(hero.humanPrompts)+" human prompts"),
+    card(toks(hero.tokens?hero.tokens.output:0), "output tokens", toks(hero.tokens?hero.tokens.input:0)+" in · "+toks(hero.tokens?hero.tokens.cacheRead:0)+" cache-read"),
+    card(hero.activeHours!=null?hero.activeHours.toFixed(1)+"h":"—", "active time", "idle-capped"),
+    card(pct(hero.toolErrorsTotal,hero.toolResults), "tool error rate", hero.toolErrorsTotal+" of "+hero.toolResults)
+  ));
+
+  // ---------- tool usage ----------
+  const tools = Object.entries(hero.tools||{}).sort((a,b)=>b[1]-a[1]);
+  const maxTool = tools.length?tools[0][1]:1;
+  const bc = hero.bashClasses||{};
+  section("Tool usage", h("div",{class:"grid two"},
+    h("div",{class:"panel"},
+      h("h2",null,"Most-used tools"),
+      tools.length? tools.slice(0,12).map(([name,n])=>bar(name,n,maxTool)) : empty("no tools")
+    ),
+    h("div",{class:"panel"},
+      h("h2",null,"Shell command mix"),
+      ["test","build","git","install","other"].map(k=>bar(k,bc[k]||0,Math.max(1,...Object.values(bc)),true)),
+      h("div",{class:"legend"},
+        h("span",null,h("span",{class:"dot",style:"background:var(--accent)"}),"reads "+intf(hero.reads)),
+        h("span",null,h("span",{class:"dot",style:"background:var(--accent2)"}),"writes "+intf(hero.writes)),
+        h("span",null,h("span",{class:"dot",style:"background:var(--warn)"}),"edits "+intf(hero.edits))
+      )
+    )
+  ));
+
+  // ---------- activity patterns ----------
+  section("Activity patterns", h("div",{class:"grid"},
+    h("div",{class:"panel"}, h("h2",null,"When you work (day × hour)"), heatmap(hero.heat||{})),
+    h("div",{class:"panel"}, h("h2",null,"Active hours over time"), timelineChart(R.timeline||[]))
+  ));
+
+  // ---------- per-project comparison ----------
+  const projs = R.projects||[];
+  if(projs.length){
+    section("Per-project comparison", h("div",{class:"panel"}, projectTable(projs)));
+  }
+
+  // ---------- granularity breakdown ----------
+  if((meta.granularity==="project"||meta.granularity==="session") && (R.units||[]).length){
+    section("Breakdown — "+meta.granularity, h("div",{class:"panel"}, unitTable(R.units)));
+  }
+
+  // ---------- methodology ----------
+  section("How “time saved” is estimated", h("div",{class:"panel"},
+    h("div",{class:"sub"},"Each action is given a manual-time baseline, then Claude calibrates per unit (low / expected / high). Baselines used:"),
+    h("div",{class:"grid two",style:"margin-top:14px"},
+      h("div",null, methodList()),
+      h("div",null, breakdownBars(hero.baseline))
+    )
+  ));
+
+  // ---------- trends ----------
+  if((R.trends||[]).length>1){
+    section("Trends across snapshots", h("div",{class:"panel"}, trendChart(R.trends)));
+  }
+
+  app.append(h("div",{class:"foot"},"Generated locally by AI Session Analyzer · data: "+(meta.dataDir||"")+" · no data left your machine"));
+
+  // ---------- builders ----------
+  function section(title, body){ app.append(h("section",null,h("h2",null,title), body)); }
+  function empty(t){ return h("div",{class:"empty"},t); }
+  function bar(lab,val,max,alt){
+    return h("div",{class:"bar"+(alt?" alt":"")},
+      h("div",{class:"lab",title:lab},lab),
+      h("div",{class:"track"}, h("div",{class:"fill",style:`width:${Math.max(2,100*val/max)}%`})),
+      h("div",{class:"val"},intf(val)));
+  }
+  function heatmap(heat){
+    const max=Math.max(1,...Object.values(heat));
+    const D=["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
+    const grid=h("div",{class:"heat"});
+    grid.append(h("div",null,""));
+    for(let hr=0;hr<24;hr++) grid.append(h("div",{class:"hr"}, hr%6===0?(""+hr):""));
+    for(let d=0;d<7;d++){
+      grid.append(h("div",{class:"dy"},D[d]));
+      for(let hr=0;hr<24;hr++){
+        const v=heat[d+"_"+hr]||0; const a=v? (0.15+0.85*v/max):0;
+        grid.append(h("div",{class:"cell",title:D[d]+" "+hr+":00 — "+v+" msgs",style:v?`background:rgba(var(--heat),${a})`:""}));
+      }
+    }
+    return Object.keys(heat).length?grid:empty("no activity recorded");
+  }
+  function timelineChart(tl){
+    if(!tl.length) return empty("no timeline");
+    const W=560,H=140,P=24; const max=Math.max(...tl.map(d=>d.activeHours),0.1);
+    const x=i=>P+(tl.length===1?W/2:(i*(W-2*P)/(tl.length-1)));
+    const y=v=>H-P-(v/max)*(H-2*P);
+    const pts=tl.map((d,i)=>x(i)+","+y(d.activeHours));
+    const svg=svgEl("svg",{viewBox:`0 0 ${W} ${H}`,width:"100%"});
+    svg.append(svgEl("polyline",{points:pts.join(" "),class:"tl-line"}));
+    svg.append(svgEl("polygon",{points:`${P},${H-P} `+pts.join(" ")+` ${x(tl.length-1)},${H-P}`,class:"tl-area"}));
+    tl.forEach((d,i)=>svg.append(svgEl("circle",{cx:x(i),cy:y(d.activeHours),r:"2.5",class:"tl-dot"})));
+    const wrap=h("div",null,svg,h("div",{class:"rngrow"},h("span",null,tl[0].date),h("span",null,"max "+max.toFixed(1)+"h"),h("span",null,tl[tl.length-1].date)));
+    return wrap;
+  }
+  function trendChart(tr){
+    const W=560,H=150,P=26; const max=Math.max(...tr.map(d=>d.activeHours),0.1);
+    const x=i=>P+(tr.length===1?W/2:(i*(W-2*P)/(tr.length-1)));
+    const y=v=>H-P-(v/max)*(H-2*P);
+    const svg=svgEl("svg",{viewBox:`0 0 ${W} ${H}`,width:"100%"});
+    svg.append(svgEl("polyline",{points:tr.map((d,i)=>x(i)+","+y(d.activeHours)).join(" "),class:"tr-line"}));
+    tr.forEach((d,i)=>svg.append(svgEl("circle",{cx:x(i),cy:y(d.activeHours),r:"3",class:"tr-dot"})));
+    return h("div",null,svg,h("div",{class:"sub"},tr.length+" snapshots · active hours over time"));
+  }
+  function projectTable(projs){
+    const t=h("table",null,h("thead",null,h("tr",null,
+      h("th",null,"Project"),h("th",null,"Sessions"),h("th",null,"Active"),h("th",null,"Changes"),h("th",null,"Tokens"),h("th",null,"Saved"),h("th",null,"×"))));
+    const tb=h("tbody");
+    for(const p of projs){
+      const sv=p.timeSaved||{};
+      tb.append(h("tr",null,
+        h("td",null,p.label),h("td",null,intf(p.sessionsCount)),h("td",null,(p.activeHours||0).toFixed(1)+"h"),
+        h("td",null,intf(p.edits+p.writes)),h("td",null,toks((p.tokens?p.tokens.input+p.tokens.output:0))),
+        h("td",null, sv.savedMin? hrs(sv.savedMin.expected):"—"),
+        h("td",{class:"mult"}, sv.multiplier!=null? sv.multiplier+"×":"—")));
+    }
+    t.append(tb); return t;
+  }
+  function unitTable(units){
+    const t=h("table",null,h("thead",null,h("tr",null,
+      h("th",null,"Unit"),h("th",null,"Sessions"),h("th",null,"Active"),h("th",null,"Changes"),h("th",null,"Saved"),h("th",null,"×"))));
+    const tb=h("tbody");
+    for(const u of units){
+      const sv=u.timeSaved||{};
+      const row=h("tr",{class:u.narrative?"clk":""},
+        h("td",null,u.label),h("td",null,intf(u.sessionsCount)),h("td",null,(u.activeHours||0).toFixed(1)+"h"),
+        h("td",null,intf(u.edits+u.writes)),
+        h("td",null, sv.savedMin? hrs(sv.savedMin.expected):"—"),
+        h("td",{class:"mult"}, sv.multiplier!=null? sv.multiplier+"×":"—"));
+      tb.append(row);
+      if(u.narrative){
+        const det=h("tr",{class:"detail",style:"display:none"},h("td",{colspan:"6"}, (u.profile?("["+u.profile+"] "):"")+u.narrative));
+        row.addEventListener("click",()=>{det.style.display=det.style.display==="none"?"table-row":"none";});
+        tb.append(det);
+      }
+    }
+    t.append(tb); return t;
+  }
+  function methodList(){
+    const b=R.baseline||{};
+    const rows=[
+      ["New file (Write)", b.perWriteMin+" min + "+b.perWriteLine10+" min / 10 lines"],
+      ["Edit existing", b.perEditMin+" min + "+b.perEditLine10+" min / 10 lines"],
+      ["Bash test/build/git/install", (b.bash?[b.bash.test,b.bash.build,b.bash.git,b.bash.install].join(" / "):"")+" min"],
+      ["Bash other", (b.bash?b.bash.other:"")+" min"],
+      ["Read/navigate", b.perReadMin+" min (cap "+b.readCapMin+")"],
+      ["Overhead", Math.round((b.overheadPct||0)*100)+"%"],
+    ];
+    return h("div",null,rows.map(([k,v])=>h("div",{class:"bar"},h("div",{class:"lab",style:"width:auto"},k),h("div",{class:"val",style:"text-align:left;color:var(--muted)"},v))));
+  }
+  function breakdownBars(bl){
+    if(!bl||!bl.breakdown) return empty("no baseline");
+    const e=bl.breakdown; const items=[["write",e.write],["edit",e.edit],["bash",e.bash],["read",e.read],["overhead",e.overhead]];
+    const max=Math.max(1,...items.map(i=>i[1]));
+    return h("div",null,h("div",{class:"sub",style:"margin-bottom:8px"},"Estimated manual minutes (this view): "+intf(bl.minutes)),
+      items.map(([k,v])=>bar(k,v,max,true)));
+  }
+  function svgEl(tag,props){const e=document.createElementNS("http://www.w3.org/2000/svg",tag);for(const[k,v]of Object.entries(props))e.setAttribute(k,v);return e;}
+})();
+</script>
+</body>
+</html>

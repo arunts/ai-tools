@@ -1,0 +1,9 @@
+{
+  "name": "coding-problem-analyzer",
+  "version": "0.4.1",
+  "description": "Generate study material from coding problems — analysis only, decoupled from any presentation/app layer. Ships four skills: `problem-details` (one problem → a compact record: algorithm in plain prose, the named pattern or none, and only the noteworthy Python syntax), `coding-syntax-aggregator` (pool many records' syntax into a deduped, chapter-grouped reference), `algo-pattern-analyzer` (pool many records' algorithms by pattern into a per-pattern practice deck: a core algorithm to drill plus grouped, blind-attemptable problem/solution drills), and `algo-explainer` (render each drill as a self-contained, themed HTML study page with a bespoke seeded p5.js visual that evokes the algorithm, plus a dark/light toggle).",
+  "author": {
+    "name": "Arun"
+  },
+  "keywords": ["coding", "algorithms", "python", "study", "patterns"]
+}

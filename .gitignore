@@ -1,0 +1,14 @@
+# macOS
+.DS_Store
+
+# generated demo artifacts (rebuild with `node examples/build.mjs`)
+examples/.snap/
+examples/sample-data/
+
+# local analysis output, if you ever point the tools at this repo
+/snaps/
+/reports/
+*.log
+
+# node (not used at runtime, but just in case)
+node_modules/
