@@ -9,7 +9,7 @@ all. Install whichever ones you want, individually.
 | Plugin | What it does | Docs |
 |--------|--------------|------|
 | **ai-session-analyzer** | Analyze your local Claude Code sessions into a self-contained HTML report — productivity, tool usage, activity patterns, per-project comparison, and a flagship "time saved → What-X-faster" estimate. Fully local, no API key, zero dependencies. | [ai-session-analyzer/](ai-session-analyzer/README.md) |
-| **coding-problem-analyzer** | Turn coding problems into study material. Four chained skills: `problem-details` (one problem → a compact record), `coding-syntax-aggregator` (pool syntax into a deduped reference), `algo-pattern-analyzer` (pool algorithms into a per-pattern practice deck), and `algo-explainer` (render each drill as a themed HTML page with a seeded p5.js visual). | [coding-problem-analyzer/](coding-problem-analyzer/) |
+| **coding-problem-analyzer** | Turn coding problems into study material. Four chained skills: `problem-details` (one problem → a compact record), `coding-syntax-aggregator` (pool syntax into a deduped reference), `algo-pattern-analyzer` (pool algorithms into a per-pattern practice deck), and `algo-explainer` (render each drill as a themed HTML page with a seeded p5.js visual). | [coding-problem-analyzer/](coding-problem-analyzer/README.md) |
 
 ## Install
 
